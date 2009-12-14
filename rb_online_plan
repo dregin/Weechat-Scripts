@@ -1,0 +1,11 @@
+Find out if users are logged into redbrick:
+	Get list of users in lobby
+		Get hostname of each user - create a list (python-append to a list)
+		Strip username from this
+		Return actual name for each user
+	grep system users list for each user to see if they're logged in
+		second list to track online true or false for each user (lists attached by id)
+		
+	Return list of users in #lobby logged into redbrick
+
+Set nicklist colours: GREEN if online else RED
