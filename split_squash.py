@@ -2,7 +2,7 @@ SCRIPT_NAME = "Split_Squish"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
 SCRIPT_VERSION = "0.1"
 SCRIPT_LICENSE = "GLP3"
-SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
+SCRIPT_DESC = "Squash netsplit channel spam into one line detailing the number of splits and the server they were connected to."
 
 import os
 import_ok = True
