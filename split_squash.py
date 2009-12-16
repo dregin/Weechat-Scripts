@@ -14,10 +14,15 @@ except:
         print "Get weechat @ http://www.weechat.org"
         import_ok = False
 
-def check_split():
-        return True     
+# weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "")
+weechat.hook_signal("*,irc_in_quit", "check_split", "")
+
+def check_split(data, signal, signal_data):
+	weechat.prnt("", signal_data)
+	weechat.prnt("", "User just quit")
+        return weechat.WEECHAT_RC_OK     
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
 		weechat.prnt("", "YEOW!")
-		hook = weechat.hook_signal("*, irc_in_quit", "check_split", "")
+		hook = weechat.hook_signal("*,irc_in_quit", "check_split", "")
