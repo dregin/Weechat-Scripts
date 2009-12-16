@@ -1,12 +1,13 @@
-SCRIPT_NAME = "Split_Squish"
+SCRIPT_NAME = "split_squash"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
 SCRIPT_VERSION = "0.1"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Squash netsplit channel spam into one line detailing the number of splits and the server they were connected to."
 
+import re
 import os
 import_ok = True
-
+pattern = '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)'
 try:
         import weechat
 except:
@@ -15,14 +16,23 @@ except:
         import_ok = False
 
 # weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "")
-weechat.hook_signal("*,irc_in_quit", "check_split", "")
+# weechat.hook_signal("*,irc_in_quit", "check_split", "")
 
-def check_split(data, signal, signal_data):
-	weechat.prnt("", signal_data)
-	weechat.prnt("", "User just quit")
-        return weechat.WEECHAT_RC_OK     
+def quit_event(data, signal, signal_data):
+	# weechat.prnt("", signal_data)
+	# weechat.prnt("", "User just quit")
+	check_split(signal_data)
+        return weechat.WEECHAT_RC_OK
+
+def check_split( signal_data ):
+	# if re.search( '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)', signal_data ):
+	# if re.search(pattern, signal_data ):
+	if re.search(pattern, '\(jordan.freenode.net irc.freenode.net\)'):
+		weechat.prnt("", "Netsplit")
+	else:
+		weechat.prnt("", "No netsplit")
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
 		weechat.prnt("", "YEOW!")
-		hook = weechat.hook_signal("*,irc_in_quit", "check_split", "")
+		hook = weechat.hook_signal("*,irc_in_quit", "quit_event", "")
