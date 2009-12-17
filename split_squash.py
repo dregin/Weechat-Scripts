@@ -7,7 +7,7 @@ SCRIPT_DESC = "Squash netsplit channel spam into one line detailing the number o
 import re
 import os
 import_ok = True
-pattern = '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)'		# Two addresses with a space between them (Freenode netsplit pattern)
+pattern = 'Quit: ([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+'		# Two addresses with a space between them (Freenode netsplit pattern)
 
 try:
         import weechat
@@ -23,9 +23,9 @@ def quit_event(data, signal, signal_data):
 
 def check_split( signal_data ):
 	if re.search(pattern, signal_data):
-		weechat.prnt("", "Netsplit?	YES")
+		weechat.prnt("", "Netsplit?	YES - %s" % signal_data)
 	else:
-		weechat.prnt("", "Netsplit?	NO")
+		weechat.prnt("", "Netsplit?	NO - %s" % signal_data)
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
