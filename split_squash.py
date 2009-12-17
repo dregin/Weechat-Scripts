@@ -7,7 +7,8 @@ SCRIPT_DESC = "Squash netsplit channel spam into one line detailing the number o
 import re
 import os
 import_ok = True
-pattern = '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)'
+pattern = '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)'		# Two addresses with a space between them (Freenode netsplit pattern)
+
 try:
         import weechat
 except:
@@ -15,22 +16,16 @@ except:
         print "Get weechat @ http://www.weechat.org"
         import_ok = False
 
-# weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "")
-# weechat.hook_signal("*,irc_in_quit", "check_split", "")
 
 def quit_event(data, signal, signal_data):
-	# weechat.prnt("", signal_data)
-	# weechat.prnt("", "User just quit")
 	check_split(signal_data)
         return weechat.WEECHAT_RC_OK
 
 def check_split( signal_data ):
-	# if re.search( '\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)', signal_data ):
-	# if re.search(pattern, signal_data ):
-	if re.search(pattern, '\(jordan.freenode.net irc.freenode.net\)'):
-		weechat.prnt("", "Netsplit")
+	if re.search(pattern, signal_data):
+		weechat.prnt("", "Netsplit?	YES")
 	else:
-		weechat.prnt("", "No netsplit")
+		weechat.prnt("", "Netsplit?	NO")
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
