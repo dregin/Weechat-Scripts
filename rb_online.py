@@ -10,6 +10,8 @@ import_ok = True
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
 users_rb_dict = {}
+buff_ptr = "NULL"
+nick_ptr = "NULL"
 
 try:
 	import weechat
@@ -42,13 +44,13 @@ def set_colors(users_logged_in):
 				host = weechat.infolist_string(nicks, 'host')
 				if ("@Redbrick.dcu.ie" in host):
 					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
-					if (rnick in users_logged_in):		# Check to see if that user is currently online
-						ptr_nick = weechat.nicklist_search_nick(buff_ptr, "", rnick)
-						# weechat_nicklist_remove_nick (my_buffer, my_nick);
-						#	weechat_nicklist_remove_nick()
-						# Use similar to weechat_nicklist_add_nick(buffer, group, name, color, prefix, prefix_color, visible)
-						
-						color = "green"
+					if (rnick in users_logged_in):				# Check to see if that user is currently online
+						color = "green"							# Color online users green
+						nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
+						if(buff_ptr and nick_ptr):
+							weechat.prnt(cmd_buffer, "nick_ptr: %s buff_ptr: %s" % (nick_ptr, buff_ptr)) # DEBUG == Checking pointer values
+							# weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
+							# weechat.nicklist_add_nick(buff_ptr, "", name, color, "", "", 1)
 					else:
 						color = ""
 				else:
