@@ -4,6 +4,7 @@ SCRIPT_VERSION = "0.1"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
 
+import re
 import os
 import_ok = True
 PRINT_CMD = "rbusers"
@@ -28,11 +29,12 @@ def lobby_users():
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				if ("@Redbrick.dcu.ie" in host):
-					rnick = host.strip('@')
-					weechat.prnt(cmd_buffer,"Nick: %s - Host: %s - Real Nick: %s" % (name, host, rnick))
+					rnick = re.sub("@Redbrick.dcu.ie","",host)
+					color = ""
 				else:
 					rnick = 'NOT A REDBRICK HOST'
-					weechat.prnt(cmd_buffer,"Nick: %s - Host: %s - Real Nick:%s %s" % (name, host, weechat.color("red"), rnick))
+					color = "red"
+				weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t Real Nick: %s %s" % (name, host, weechat.color(color), rnick))
 		return weechat.WEECHAT_RC_OK
 
 def users_online():
@@ -46,9 +48,9 @@ def users_online():
 			my_dict[ key ] += int( value )
 		else:
 			my_dict[ key ] = int( value )
-	pipe.close()				# Optimize list - remove duplicates? Performance?
+	pipe.close()
 	users_online = my_dict
-	return users_online			# users_online is a list
+	return users_online			# users_online is a dictionary
 
 def colour_nicks():
 	# Remove nicks from nicklist in #lobby
