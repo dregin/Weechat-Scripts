@@ -43,6 +43,7 @@ def set_colors(users_logged_in):
 				if ("@Redbrick.dcu.ie" in host):
 					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
 					if (rnick in users_logged_in):		# Check to see if that user is currently online
+						ptr_nick = weechat.nicklist_search_nick(buff_ptr, "", rnick)
 						# weechat_nicklist_remove_nick (my_buffer, my_nick);
 						#	weechat_nicklist_remove_nick()
 						# Use similar to weechat_nicklist_add_nick(buffer, group, name, color, prefix, prefix_color, visible)
