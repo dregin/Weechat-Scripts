@@ -18,10 +18,25 @@ except:
 	import_ok = False
 
 def lobby_users():
-	print ""
-	return weechat.WEECHAT_RC_OK
+	# Should return a list/dictionary of nick pointers and related ident nick
+	nicks = weechat.infolist_get('irc_nick', '', 'redbrick,#lobby')
+	if nicks != None:
+		if nicks == {}:
+			weechat.prnt("No nicks")
+		else:
+			while weechat.infolist_next(nicks):
+				name = weechat.infolist_string(nicks, 'name')
+				host = weechat.infolist_string(nicks, 'host')
+				if ("@Redbrick.dcu.ie" in host):
+					rnick = host.strip('@')
+					weechat.prnt(cmd_buffer,"Nick: %s - Host: %s - Real Nick: %s" % (name, host, rnick))
+				else:
+					rnick = 'NOT A REDBRICK HOST'
+					weechat.prnt(cmd_buffer,"Nick: %s - Host: %s - Real Nick:%s %s" % (name, host, weechat.color("red"), rnick))
+		return weechat.WEECHAT_RC_OK
 
 def users_online():
+	# Return list of users online
 	value = 0
 	pipe = os.popen('users')
 	pipeout = pipe.read()	
@@ -36,13 +51,17 @@ def users_online():
 	return users_online			# users_online is a list
 
 def colour_nicks():
+	# Remove nicks from nicklist in #lobby
+	# Re-add nicks with color set to green
 	return weechat.WEECHAT_RC_OK
 
 def print_users(data, buffer, args):
+	# Prints a list of users in #lobby
 	users = users_online()
 	cmd_buffer = buffer
 	for name in users:
 		weechat.prnt(cmd_buffer, "%s" % name)
+	lobby_users()
 	return weechat.WEECHAT_RC_OK
 
 if __name__ == "__main__" and import_ok:
