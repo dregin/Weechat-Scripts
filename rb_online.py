@@ -9,7 +9,7 @@ import os
 import_ok = True
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
-my_dict = {}
+users_rb_dict = {}
 
 try:
 	import weechat
@@ -18,9 +18,21 @@ except:
 	print "Get weechat @ http://www.weechat.org"
 	import_ok = False
 
-def lobby_users():
-	# Should return a list/dictionary of nick pointers and related ident nick
+def set_colors(users_logged_in):
+	# Compare real nicks in #lobby to those in users_rb_dict
+		# if real nick exists in user_rb_dict
+			# remove nick
+			# color nick (online color)
+			# re-add nick
+		# else
+			# remove nick
+			# color nick (offline color)
+			# re-add nick
+
+	# TO-DO keep track of current nick colors to save removing and re-adding nicks that don't need changing
+
 	nicks = weechat.infolist_get('irc_nick', '', 'redbrick,#lobby')
+	buff_ptr = weechat.buffer_search("irc","redbrick.#lobby")
 	if nicks != None:
 		if nicks == {}:
 			weechat.prnt("No nicks")
@@ -29,11 +41,18 @@ def lobby_users():
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				if ("@Redbrick.dcu.ie" in host):
-					rnick = re.sub("@Redbrick.dcu.ie","",host)
-					color = ""
+					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
+					if (rnick in users_logged_in):		# Check to see if that user is currently online
+						# weechat_nicklist_remove_nick (my_buffer, my_nick);
+						#	weechat_nicklist_remove_nick()
+						# Use similar to weechat_nicklist_add_nick(buffer, group, name, color, prefix, prefix_color, visible)
+						
+						color = "green"
+					else:
+						color = ""
 				else:
 					rnick = 'NOT A REDBRICK HOST'
-					color = "red"
+					color = 'red'
 				weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t Real Nick: %s %s" % (name, host, weechat.color(color), rnick))
 		return weechat.WEECHAT_RC_OK
 
@@ -44,18 +63,13 @@ def users_online():
 	pipeout = pipe.read()	
 	for item in pipeout.split():
 		key = item
-		if my_dict.get( key ):
-			my_dict[ key ] += int( value )
+		if users_rb_dict.get( key ):
+			users_rb_dict[ key ] += int( value )
 		else:
-			my_dict[ key ] = int( value )
+			users_rb_dict[ key ] = int( value )
 	pipe.close()
-	users_online = my_dict
-	return users_online			# users_online is a dictionary
-
-def colour_nicks():
-	# Remove nicks from nicklist in #lobby
-	# Re-add nicks with color set to green
-	return weechat.WEECHAT_RC_OK
+	# users_online = users_rb_dict
+	return users_rb_dict			# users_online is a dictionary
 
 def print_users(data, buffer, args):
 	# Prints a list of users in #lobby
@@ -63,9 +77,15 @@ def print_users(data, buffer, args):
 	cmd_buffer = buffer
 	for name in users:
 		weechat.prnt(cmd_buffer, "%s" % name)
-	lobby_users()
+	# lobby_users()
+	return weechat.WEECHAT_RC_OK
+
+def update_colors(data, buffer, args):
+	# main function.... shouldn't this actually be part of the "main" function? oh well. Fix later.
+	users_logged_in = users_online()# Get a dictionary of all users logged into the same redbrick server as the current user
+	set_colors(users_logged_in)	
 	return weechat.WEECHAT_RC_OK
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
-		weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "print_users", "" )
+		weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "update_colors", "" )
