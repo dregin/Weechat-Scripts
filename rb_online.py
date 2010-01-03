@@ -57,6 +57,7 @@ def set_colors(users_logged_in):
 					rnick = 'NOT A REDBRICK HOST'
 					color = 'red'
 				weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t Real Nick: %s %s" % (name, host, weechat.color(color), rnick))
+		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 
 def users_online():
