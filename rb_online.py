@@ -50,7 +50,6 @@ def set_colors(users_logged_in):
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				flag = weechat.infolist_integer(nicks, 'flags')
-				group = weechat.infolist_string(nicks, 'group')
 				if ("@Redbrick.dcu.ie" in host):
 					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
 					if (rnick in users_logged_in):				# Check to see if that user is currently online
@@ -62,12 +61,11 @@ def set_colors(users_logged_in):
 						if(buff_ptr):	# The nick may already have been removed from the buffer....
 							color = 'green'
 							opt_color = 'gray'
-							weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
+							# weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
 							if flag == 0:
-								test = weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(opt_color), " ", color, 1)
+								weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(opt_color), " ", color, 1)
 							elif flag == 8:
 								weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(opt_color), "@", color, 1)
-							# weechat.prnt(cmd_buffer, "TEST: %s" % test)
 					else:
 						color = ""
 				else:
@@ -76,7 +74,7 @@ def set_colors(users_logged_in):
 				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
-
+	
 def users_online():
 	# Return list of users online
 	value = 0
@@ -101,7 +99,8 @@ def print_users(data, buffer, args):
 	# lobby_users()
 	return weechat.WEECHAT_RC_OK
 
-def update_colors(data, buffer, args):
+#def update_colors(data, buffer, args):
+def update_colors(data, remaining_calls):
 	# main function.... shouldn't this actually be part of the "main" function? oh well. Fix later.
 	users_logged_in = users_online()# Get a dictionary of all users logged into the same redbrick server as the current user
 	set_colors(users_logged_in)	
@@ -113,5 +112,5 @@ if __name__ == "__main__" and import_ok:
 		for option, default_value in rb_online_settings.iteritems():
 			if not weechat.config_is_set_plugin(option):
 				weechat.config_set_plugin(option, default_value)
-		weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "update_colors", "" )
-
+		weechat.hook_timer(1000, 0, 0, "update_colors", "")
+		# weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "update_colors", "" )
