@@ -39,7 +39,8 @@ def set_colors(users_logged_in):
 
 	nicks = weechat.infolist_get('irc_nick', '', 'redbrick,#lobby')
 	buff_ptr = weechat.buffer_search("irc","redbrick.#lobby")
-	group_ptr = weechat.nicklist_search_group(buff_ptr, "", "08|normal")
+	group_normal_ptr = weechat.nicklist_search_group(buff_ptr, "", "08|normal")
+	group_op_ptr = weechat.nicklist_search_group(buff_ptr, "", "04|op")
 	color_nick_online = weechat.config_get_plugin("color_nick_online")
 	if nicks != None:
 		if nicks == {}:
@@ -48,32 +49,31 @@ def set_colors(users_logged_in):
 			while weechat.infolist_next(nicks):
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
+				flag = weechat.infolist_integer(nicks, 'flags')
 				group = weechat.infolist_string(nicks, 'group')
-				# group = weechat.infolist_string(group_ptr, 'name')
 				if ("@Redbrick.dcu.ie" in host):
 					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
 					if (rnick in users_logged_in):				# Check to see if that user is currently online
 						color = "green"							# Color online users green
 						nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
 						if(buff_ptr and nick_ptr):
-							# weechat.prnt(cmd_buffer, "nick_ptr: %s buff_ptr: %s" % (nick_ptr, buff_ptr)) # DEBUG == Checking pointer values
-							weechat.prnt(cmd_buffer, "REMOVE NICK")
+							# weechat.prnt(cmd_buffer, "REMOVE NICK")
 							weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
 						if(buff_ptr):	# The nick may already have been removed from the buffer....
 							color = 'green'
 							opt_color = 'gray'
-							# color = weechat.config_get_plugin("color_nick_online")
-							weechat.prnt(cmd_buffer, "ADDING NICK: buffer pointer: %s group pointer: %s name: %s color: %s" % (buff_ptr, group_ptr, name, color))
-							test = weechat.nicklist_add_nick(buff_ptr, group_ptr, name, weechat.color(opt_color), " ", color, 1)
-							weechat.prnt(cmd_buffer, "TEST: %s" % test)
-							# weechat.nicklist_add_nick(buff_ptr, group_ptr, name, "", "", "", 1)
-						# weechat.nicklist_add_nick(buff_ptr, "", "TESTLOL", "", "", "", 1)
+							weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
+							if flag == 0:
+								test = weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(opt_color), " ", color, 1)
+							elif flag == 8:
+								weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(opt_color), "@", color, 1)
+							# weechat.prnt(cmd_buffer, "TEST: %s" % test)
 					else:
 						color = ""
 				else:
 					rnick = 'NOT A REDBRICK HOST'
 					color = 'red'
-				weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
+				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 
