@@ -5,8 +5,8 @@ SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
 
 rb_online_settings = {
-	"color_nick_online"		: "green",
-	"color_nick_offline"	: "red"
+	"color_nick_online"			: "green",
+	"color_nick_offline"		: "red"
 }
 import re
 import os
@@ -14,6 +14,8 @@ import_ok = True
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
 users_rb_dict = {}
+nicks_added_online = {}				# Used to track nicks that have already been re-added as online
+nicks_added_offline = {}			# Used to track nicks that have already been re-added as offline
 buff_ptr = "NULL"
 nick_ptr = "NULL"
 
@@ -53,24 +55,19 @@ def set_colors(users_logged_in):
 				if ("@Redbrick.dcu.ie" in host):
 					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
 					if (rnick in users_logged_in):				# Check to see if that user is currently online
-						color = "green"							# Color online users green
-						nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
-						if(buff_ptr and nick_ptr):
-							# weechat.prnt(cmd_buffer, "REMOVE NICK")
-							weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
-						if(buff_ptr):	# The nick may already have been removed from the buffer....
-							color = 'green'
-							opt_color = 'gray'
-							# weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
-							if flag == 0:
-								weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(opt_color), " ", color, 1)
-							elif flag == 8:
-								weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(opt_color), "@", color, 1)
+						color = "lightgreen"					# Color online users green
 					else:
-						color = ""
-				else:
-					rnick = 'NOT A REDBRICK HOST'
-					color = 'red'
+						color = "darkgray"
+					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
+					if(buff_ptr and nick_ptr):
+						# weechat.prnt(cmd_buffer, "REMOVE NICK")
+						weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
+					if(buff_ptr):	# The nick may already have been removed from the buffer....
+						# weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
+						if flag == 0:
+							weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(color), " ", color, 1)
+						elif flag == 8:
+							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
 				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
@@ -112,5 +109,5 @@ if __name__ == "__main__" and import_ok:
 		for option, default_value in rb_online_settings.iteritems():
 			if not weechat.config_is_set_plugin(option):
 				weechat.config_set_plugin(option, default_value)
-		weechat.hook_timer(1000, 0, 0, "update_colors", "")
+		weechat.hook_timer(300, 0, 0, "update_colors", "")
 		# weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "update_colors", "" )
