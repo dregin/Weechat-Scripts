@@ -41,6 +41,9 @@ def set_colors(users_logged_in):
 
 	nicks = weechat.infolist_get('irc_nick', '', 'redbrick,#lobby')
 	buff_ptr = weechat.buffer_search("irc","redbrick.#lobby")
+	if (nicks == "" and buff_ptr == ""):
+		nicks = weechat.infolist_get('irc_nick', '', 'irc.redbrick.dcu.ie,#lobby')
+		buff_ptr = weechat.buffer_search("irc","irc.redbrick.dcu.ie.#lobby")
 	group_normal_ptr = weechat.nicklist_search_group(buff_ptr, "", "08|normal")
 	group_op_ptr = weechat.nicklist_search_group(buff_ptr, "", "04|op")
 	color_nick_online = weechat.config_get_plugin("color_nick_online")
@@ -69,7 +72,6 @@ def set_colors(users_logged_in):
 						elif flag == 8:
 							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
 				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
-		users_logged_in.clear()
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 	
