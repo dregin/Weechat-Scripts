@@ -69,6 +69,7 @@ def set_colors(users_logged_in):
 						elif flag == 8:
 							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
 				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
+		users_logged_in.clear()
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 	
