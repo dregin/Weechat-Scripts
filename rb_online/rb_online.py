@@ -6,7 +6,7 @@ SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged in
 
 rb_online_settings = {
 	"color_nick_online"			: "green",
-	"color_nick_offline"		: "red"
+	"color_nick_offline"		: "darkgray"
 }
 import re
 import os

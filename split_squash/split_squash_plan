@@ -1,3 +1,8 @@
 Regexp should check for two addresses with at least 1 period and a space between them in the last set of brackets
 	k|ra (n=akira@pdpc/supporter/active/akira) has quit (kornbluth.freenode.net irc.freenode.net)
+	\(([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+\)
 
+	# hook incoming messages
+		weechat.hook_modifier('weechat_print', 'parse', '')
+
+	hook = weechat::hook_signal("server_name,irc_in_quit", "regain_quit_nick_cb", "");	

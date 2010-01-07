@@ -1,6 +1,8 @@
 Find out if users are logged into redbrick:
 	Get list of users in lobby
 		Get hostname of each user - create a list (python-append to a list)
+			li = []
+			li.append()
 		Strip username from this
 		Return actual name for each user
 	grep system users list for each user to see if they're logged in
