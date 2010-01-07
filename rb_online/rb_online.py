@@ -1,6 +1,6 @@
 SCRIPT_NAME = "rb_online"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
-SCRIPT_VERSION = "0.1"
+SCRIPT_VERSION = "1.0"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
 
@@ -36,6 +36,8 @@ def set_colors(users_logged_in):
 			# remove nick
 			# color nick (offline color)
 			# re-add nick
+	# Clear users_rb_dict
+	# Loop again using timer
 
 	# TO-DO keep track of current nick colors to save removing and re-adding nicks that don't need changing
 
@@ -62,21 +64,18 @@ def set_colors(users_logged_in):
 					else:
 						color = "darkgray"
 					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
-					if(buff_ptr and nick_ptr):
-						# weechat.prnt(cmd_buffer, "REMOVE NICK")
+					if(buff_ptr and nick_ptr):									# Add nick coloured either green or darkgray
 						weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
 					if(buff_ptr):	# The nick may already have been removed from the buffer....
-						# weechat.prnt(cmd_buffer, "ADDING NICK: Flags: %s Name: %s" % (flag, name))
-						if flag == 0:
+						if flag == 0:	# Check if normal user
 							weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(color), " ", color, 1)
-						elif flag == 8:
+						elif flag == 8:	# Check if ops (include @ prefix) 
 							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
-				# weechat.prnt(cmd_buffer,"Nick: %s Host: %s\t GROUP NAME: %s Real Nick: %s %s" % (name, host, group, weechat.color(color), rnick))
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 	
 def users_online():
-	# Return list of users online
+	# Return dictionary of names of users logged into the same server as the current user via SSH
 	value = 0
 	pipe = os.popen('users')
 	pipeout = pipe.read()	
@@ -87,20 +86,9 @@ def users_online():
 		else:
 			users_rb_dict[ key ] = int( value )
 	pipe.close()
-	# users_online = users_rb_dict
 	return users_rb_dict			# users_online is a dictionary
 
-def print_users(data, buffer, args):
-	# Prints a list of users in #lobby
-	users = users_online()
-	cmd_buffer = buffer
-	for name in users:
-		weechat.prnt(cmd_buffer, "%s" % name)
-	# lobby_users()
-	return weechat.WEECHAT_RC_OK
-
-#def update_colors(data, buffer, args):
-def update_colors(data, remaining_calls):
+def update_nicklist(data, remaining_calls):
 	# main function.... shouldn't this actually be part of the "main" function? oh well. Fix later.
 	users_logged_in = users_online()# Get a dictionary of all users logged into the same redbrick server as the current user
 	set_colors(users_logged_in)	
@@ -112,5 +100,4 @@ if __name__ == "__main__" and import_ok:
 		for option, default_value in rb_online_settings.iteritems():
 			if not weechat.config_is_set_plugin(option):
 				weechat.config_set_plugin(option, default_value)
-		weechat.hook_timer(300, 0, 0, "update_colors", "")
-		# weechat.hook_command("rbusers", "Print all Redbrick users logged in.", "", "", "", "update_colors", "" )
+		weechat.hook_timer(300, 0, 0, "update_nicklist", "")

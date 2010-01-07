@@ -10,11 +10,11 @@ import_ok = True
 pattern = '([^.]+\.)+[^ ]+ ([^.]+\.)+[^.]+'		# Two addresses with a space between them (Freenode netsplit pattern)
 splits = []
 try:
-        import weechat
+    import weechat
 except:
-        print "This script must be run under Weechat"
-        print "Get weechat @ http://www.weechat.org"
-        import_ok = False
+	print "This script must be run under Weechat"
+	print "Get weechat @ http://www.weechat.org"
+	import_ok = False
 
 
 def quit_event(data, signal, signal_data):
@@ -27,6 +27,7 @@ def check_split( signal_data ):
 		host = weechat.infolist_string(signal_data, 'host')
 		splits.append(signal_data)
 	else:
+		return weechat.WEECHAT_RC_OK
 		# weechat.prnt("", "Netsplit?	NO - %s" % signal_data)
 
 if __name__ == "__main__" and import_ok:
