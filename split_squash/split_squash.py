@@ -18,17 +18,19 @@ except:
 
 
 def quit_event(data, signal, signal_data):
-	check_split(signal_data)
+	if (check_split(signal_data)):
+		weechat.prnt("", "Netsplit? YES - %s" % signal_data)
+	else:
+		weechat.prnt("", "Netsplit? NO - %s" % signal_data)
         return weechat.WEECHAT_RC_OK
 
 def check_split( signal_data ):
 	if re.search(pattern, signal_data):
-		# weechat.prnt("", "Netsplit?	YES - %s" % signal_data)
 		host = weechat.infolist_string(signal_data, 'host')
 		splits.append(signal_data)
+		return True
 	else:
-		return weechat.WEECHAT_RC_OK
-		# weechat.prnt("", "Netsplit?	NO - %s" % signal_data)
+		return False
 
 if __name__ == "__main__" and import_ok:
 	if weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", ""):
