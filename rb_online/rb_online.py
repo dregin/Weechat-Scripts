@@ -71,6 +71,7 @@ def set_colors(users_logged_in):
 							weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(color), " ", color, 1)
 						elif flag == 8:	# Check if ops (include @ prefix) 
 							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
+		users_rb_dict.clear()
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 	
@@ -100,4 +101,4 @@ if __name__ == "__main__" and import_ok:
 		for option, default_value in rb_online_settings.iteritems():
 			if not weechat.config_is_set_plugin(option):
 				weechat.config_set_plugin(option, default_value)
-		weechat.hook_timer(300, 0, 0, "update_nicklist", "")
+		weechat.hook_timer(1000, 0, 0, "update_nicklist", "")
