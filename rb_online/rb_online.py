@@ -73,7 +73,7 @@ def set_colors(users_logged_in):
 					# - Lists won't be populated if at least one iteration of the list hasn't happened.
 					#		first_run set false at the end of first iteration
 					# - Set outgoing if - user is offline, user WAS online on the last iter, user is not currently outgoing
-					# - Set incoming if - user is online, user was NOT online on the last iter, user is not currently incoming
+					# - Set incoming if - user is online, user was NOT online on the last iter, user is not currently incoming 
 					#
 
 					elif ( !rnick in users_logged_in && !first_run && rnick in online_list && !rnick in outgoing_list ):
