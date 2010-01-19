@@ -13,11 +13,12 @@ import os
 import_ok = True
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
+intermin_period = 10
 users_rb_dict = {}
-nicks_added_online = {}				# Used to track nicks that have already been re-added as online
-nicks_added_offline = {}			# Used to track nicks that have already been re-added as offline
+nicks_status = {}
 buff_ptr = "NULL"
 nick_ptr = "NULL"
+first_run = True
 
 try:
 	import weechat
@@ -25,6 +26,9 @@ except:
 	print "This script must be run under Weechat"
 	print "Get weechat @ http://www.weechat.org"
 	import_ok = False
+
+def what_color():
+	return weechat.WEECHAT_RC_OK
 
 def set_colors(users_logged_in):
 	# Compare real nicks in #lobby to those in users_rb_dict
@@ -53,25 +57,48 @@ def set_colors(users_logged_in):
 		if nicks == {}:
 			weechat.prnt("No nicks")
 		else:
-			while weechat.infolist_next(nicks):
+			while weechat.infolist_next(nicks):											# Stepping through each nick in #lobby
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				flag = weechat.infolist_integer(nicks, 'flags')
 				if ("@Redbrick.dcu.ie" in host):
-					rnick = re.sub("@Redbrick.dcu.ie","",host)	# Strip real nick from host
-					if (rnick in users_logged_in):				# Check to see if that user is currently online
-						color = "lightgreen"					# Color online users green
-					else:
+					rnick = re.sub("@Redbrick.dcu.ie","",host)							# Strip real nick from host
+					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)         # Find nick pointer
+
+					if (rnick in users_logged_in):		# Check to see if that user is currently online
+						online_list.append(rnick)
+						color = "lightgreen"											# Color online users green
+
+					#
+					# - Lists won't be populated if at least one iteration of the list hasn't happened.
+					#		first_run set false at the end of first iteration
+					# - Set outgoing if - user is offline, user WAS online on the last iter, user is not currently outgoing
+					# - Set incoming if - user is online, user was NOT online on the last iter, user is not currently incoming
+					#
+
+					elif ( !rnick in users_logged_in && !first_run && rnick in online_list && !rnick in outgoing_list ):
+						outgoing_list.append(rnick)
+						weechat.hook_timer(10000, 1, 0, pop_outgoing, "")		# Pop from end of outgoing_list statck --> Add to offline_list
+						color = "orange"
+					elif ( rnick in users_logged_in && !first_run && !rnick in online_list && !rnick in incoming_list)
+						incoming_list.append(rnick)
+						weechat.hook_timer(10000, 1, 0, pop_incoming, "")		# Pop from end of incoming_list stack --> Add to online_list
+						color = "red"
+					elif( rnick in offline_list):
 						color = "darkgray"
-					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)	# Find nick pointer
-					if(buff_ptr and nick_ptr):									# Add nick coloured either green or darkgray
+
+
+					if(buff_ptr and nick_ptr):											# Add nick coloured either green or darkgray
 						weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
-					if(buff_ptr):	# The nick may already have been removed from the buffer....
-						if flag == 0:	# Check if normal user
+					if(buff_ptr):														# The nick may already have been removed from the buffer....
+						if ( flag == 0 ):													# Check if normal user
 							weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(color), " ", color, 1)
-						elif flag == 8:	# Check if ops (include @ prefix) 
+						elif ( flag == 8 ):													# Check if ops (include @ prefix) 
 							weechat.nicklist_add_nick(buff_ptr, group_op_ptr, name, weechat.color(color), "@", color, 1)
+				nicks_status.append(rnick)
+		first_run = False
 		users_rb_dict.clear()
+		# Add nick:status to a dictionary....
 		weechat.infolist_free(nicks)
 		return weechat.WEECHAT_RC_OK
 	
