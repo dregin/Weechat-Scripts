@@ -35,11 +35,17 @@ except:
 	import_ok = False
 
 def pop_outgoing(data, remaining_calls):
-	outgoing_list.pop()
+	global outgoing_list
+	if (outgoing_list):
+		outgoing_list.pop()
 	return weechat.WEECHAT_RC_OK
 
 def pop_incoming(data, remaining_calls):
-	incoming_list.pop
+	global incoming_list
+	global online_list
+
+	if(incoming_list):
+		incoming_list.pop()
 	return weechat.WEECHAT_RC_OK
 
 def set_colors(users_logged_in):
@@ -94,27 +100,31 @@ def set_colors(users_logged_in):
 
 					# If NOT already logged in NOT first run WAS online on last loop NOT in outgoing list 
 
-					if( not rnick in users_logged_in and not first_run and rnick in online_list and not rnick in outgoing_list ):
-						weechat.prnt("", "OUTgoing user")
-						outgoing_list[:0] = rnick
-						weechat.hook_timer(10 * 1000, 1, 0, pop_outgoing, "")		# Pop from end of outgoing_list statck --> Add to offline_list
-						color = "orange"
+					if( not rnick in users_logged_in and not first_run and rnick in online_list and rnick not in outgoing_list ):
+						weechat.prnt("", "OUTgoing user - %s" % rnick)
+						outgoing_list.insert(0, rnick)
+						weechat.hook_timer(10 * 1000, 0, 1, "pop_outgoing", "")		# Pop from end of outgoing_list stack --> Add to offline_list
+						color = "yellow"
 
 					# If IS logged in NOT first run IN nicklist WAS offline on last loop NOT in incoming list
 
-					elif( rnick in users_logged_in and not first_run and rnick in offline_list and not rnick in incoming_list ):
-						weechat.prnt("", "INcoming user")
-						incoming_list[:0] = rnick
-						weechat.hook_timer(10 * 1000, 1, 0, pop_incoming, "")
+					elif( rnick in users_logged_in and not first_run and rnick in offline_list and rnick not in incoming_list ):
+						weechat.prnt("", "INcoming user - %s" % rnick)
+						incoming_list.insert(0, rnick)
+						weechat.hook_timer(10 * 1000, 0, 1, "pop_incoming", "")
 						color = "red"
 
-                    # TODO - Need this IF condition stricter for elifs
-					elif( rnick in users_logged_in ):			# Check to see if that use
+					# elif( rnick in users_logged_in and rnick not in incoming_list ):		# Check to see if that use
+					elif( rnick in users_logged_in):
+						if (rnick in offline_list):
+							offline_list.remove(rnick)
 						online_list.append(rnick)
 						color = "lightgreen"												# Color online users green
 
 					else:
 						offline_list.append(rnick)
+						if (rnick in online_list):
+							online_list.remove(rnick)
 						color = "darkgray"
 
 
