@@ -10,21 +10,25 @@ rb_online_settings = {
 }
 import re
 import os
+import time
 import_ok = True
 
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
 
 users_rb_dict = {}
-users_logged_in = {}i
+users_logged_in = {}
 
 buff_ptr = "NULL"
 nick_ptr = "NULL"
 
 first_run = 1
 
-online_list = []
-offline_list = []
+# online_list = []
+# offline_list = []
+
+online_dict = {}
+offline_dict = {}
 
 outgoing_list = []
 incoming_list = []
@@ -37,24 +41,37 @@ except:
 	import_ok = False
 
 def pop_outgoing(data, remaining_calls):
+	weechat.prnt('', 'OUTgoing callback called at %s' % time.time())
 	global outgoing_list
+	global offline_dict
+	global online_dict
+
 	if (outgoing_list):
-		outgoing_list.pop()
+		rnick  = outgoing_list.pop()
+		offline_dict[rnick] = ""
+		if (rnick in online_dict):
+			del online_dict[rnick]
 	return weechat.WEECHAT_RC_OK
 
 def pop_incoming(data, remaining_calls):
+	weechat.prnt('', 'INcoming callback called at %s' % time.time())			
 	global incoming_list
-	global online_list
+	global offline_dict
+	global online_dict
 
-	if(incoming_list):
-		incoming_list.pop()
+	if (incoming_list):
+		rnick = incoming_list.pop()
+		online_dict[rnick] = ""			#	Moving from incoming to online
+		if rnick in offline_list:
+		#	weechat.prnt("", "REMOVING %s from offline_list" % rnick)
+			del offline_dict[rnick]
 	return weechat.WEECHAT_RC_OK
 
 def set_colors(users_logged_in):
 	global first_run
 
-	global online_list
-	global offline_list
+	global online_dict
+	global offline_dict
 	global outgoing_list
 	global incoming_list
 
@@ -88,31 +105,39 @@ def set_colors(users_logged_in):
 
 					# If NOT already logged in NOT first run WAS online on last loop NOT in outgoing list 
 
-					if( not rnick in users_logged_in and not first_run and rnick in online_list and rnick not in outgoing_list ):
+					if( not rnick in users_logged_in and not first_run and rnick in online_dict and rnick not in outgoing_list ):
 						# weechat.prnt("", "OUTgoing user - %s" % rnick)
 						outgoing_list.insert(0, rnick)
 						weechat.hook_timer(10 * 1000, 0, 1, "pop_outgoing", "")				# TODO - This hook executes pop_outgoing immediately instead of waiting 10 seconds
 						color = "yellow"
+						if rnick in online_dict:
+							del online_dict[rnick]
 
 					# If IS logged in NOT first run IN nicklist WAS offline on last loop NOT in incoming list
 
-					elif( rnick in users_logged_in and not first_run and rnick in offline_list and rnick not in incoming_list ):
+					elif( rnick in users_logged_in and not first_run and rnick in offline_dict and rnick not in incoming_list ):
 						# weechat.prnt("", "INcoming user - %s" % rnick)
 						incoming_list.insert(0, rnick)
 						weechat.hook_timer(10 * 1000, 0, 1, "pop_incoming", "")				# TODO - This hook executes pop_incoming immediately instead of waiting 10 seconds
 						color = "red"														# Color incoming users red
+						if( rnick in offline_dict ):
+							del offline_dict[rnick]
+
+					elif( rnick in incoming_list ): color = "red"
+
+					elif( rnick in outgoing_list ): color = "yellow"
 
 					# Check to see if that user is logged
 					elif( rnick in users_logged_in):
-						if (rnick in offline_list):
-							offline_list.remove(rnick)
-						online_list.append(rnick)
+						if (rnick in offline_dict):
+							del offline_dict[rnick]
+						online_dict[rnick] = ""
 						color = "lightgreen"												# Color online users green
 
 					else:
-						offline_list.append(rnick)
-						if (rnick in online_list):
-							online_list.remove(rnick)
+						offline_dict[rnick] = ""
+						if (rnick in online_dict):
+							del online_dict[rnick]
 						color = "darkgray"
 
 					# Adding nicks with relevant colours back into the nicklist
