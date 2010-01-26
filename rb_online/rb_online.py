@@ -62,7 +62,7 @@ def pop_incoming(data, remaining_calls):
 	if (incoming_list):
 		rnick = incoming_list.pop()
 		online_dict[rnick] = ""			#	Moving from incoming to online
-		if rnick in offline_list:
+		if rnick in offline_dict:
 		#	weechat.prnt("", "REMOVING %s from offline_list" % rnick)
 			del offline_dict[rnick]
 	return weechat.WEECHAT_RC_OK
