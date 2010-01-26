@@ -1,6 +1,6 @@
 SCRIPT_NAME = "rb_online"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
-SCRIPT_VERSION = "1.0"
+SCRIPT_VERSION = "1.5"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
 
@@ -11,14 +11,16 @@ rb_online_settings = {
 import re
 import os
 import_ok = True
+
 PRINT_CMD = "rbusers"
 cmd_buffer = ""
-intermin_period = 10
+
 users_rb_dict = {}
-nicks_status = {}
-users_logged_in = {}
+users_logged_in = {}i
+
 buff_ptr = "NULL"
 nick_ptr = "NULL"
+
 first_run = 1
 
 online_list = []
@@ -49,20 +51,6 @@ def pop_incoming(data, remaining_calls):
 	return weechat.WEECHAT_RC_OK
 
 def set_colors(users_logged_in):
-	# Compare real nicks in #lobby to those in users_rb_dict
-		# if real nick exists in user_rb_dict
-			# remove nick
-			# color nick (online color)
-			# re-add nick
-		# else
-			# remove nick
-			# color nick (offline color)
-			# re-add nick
-	# Clear users_rb_dict
-	# Loop again using timer
-
-	# TO-DO keep track of current nick colors to save removing and re-adding nicks that don't need changing
-
 	global first_run
 
 	global online_list
@@ -92,7 +80,7 @@ def set_colors(users_logged_in):
 					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)         # Find nick pointer
 
 					#
-					# - Lists won't be populated if at least one iteration of the list hasn't happened.
+					# - Incoming/Outgoing lists won't be populated if at least one iteration of the list hasn't happened.
 					#		first_run set false at the end of first iteration
 					# - Set outgoing if - user is offline, user WAS online on the last iter, user is not currently outgoing
 					# - Set incoming if - user is online, user was NOT online on the last iter, user is not currently incoming 
@@ -101,20 +89,20 @@ def set_colors(users_logged_in):
 					# If NOT already logged in NOT first run WAS online on last loop NOT in outgoing list 
 
 					if( not rnick in users_logged_in and not first_run and rnick in online_list and rnick not in outgoing_list ):
-						weechat.prnt("", "OUTgoing user - %s" % rnick)
+						# weechat.prnt("", "OUTgoing user - %s" % rnick)
 						outgoing_list.insert(0, rnick)
-						weechat.hook_timer(10 * 1000, 0, 1, "pop_outgoing", "")		# Pop from end of outgoing_list stack --> Add to offline_list
+						weechat.hook_timer(10 * 1000, 0, 1, "pop_outgoing", "")				# TODO - This hook executes pop_outgoing immediately instead of waiting 10 seconds
 						color = "yellow"
 
 					# If IS logged in NOT first run IN nicklist WAS offline on last loop NOT in incoming list
 
 					elif( rnick in users_logged_in and not first_run and rnick in offline_list and rnick not in incoming_list ):
-						weechat.prnt("", "INcoming user - %s" % rnick)
+						# weechat.prnt("", "INcoming user - %s" % rnick)
 						incoming_list.insert(0, rnick)
-						weechat.hook_timer(10 * 1000, 0, 1, "pop_incoming", "")
-						color = "red"
+						weechat.hook_timer(10 * 1000, 0, 1, "pop_incoming", "")				# TODO - This hook executes pop_incoming immediately instead of waiting 10 seconds
+						color = "red"														# Color incoming users red
 
-					# elif( rnick in users_logged_in and rnick not in incoming_list ):		# Check to see if that use
+					# Check to see if that user is logged
 					elif( rnick in users_logged_in):
 						if (rnick in offline_list):
 							offline_list.remove(rnick)
@@ -127,13 +115,12 @@ def set_colors(users_logged_in):
 							online_list.remove(rnick)
 						color = "darkgray"
 
+					# Adding nicks with relevant colours back into the nicklist
 
-					# INSERTING COLORED NICKS
-
-					if(buff_ptr and nick_ptr):											# Add nick coloured either green or darkgray
+					if(buff_ptr and nick_ptr):
 						# TODO - Decide whether or not this REMOVE should be moved...
 						weechat.nicklist_remove_nick(buff_ptr, nick_ptr)
-					if(buff_ptr):														# The nick may already have been removed from the buffer....
+					if(buff_ptr):															# The nick may already have been removed from the buffer....
 						if ( flag == 0 ):													# Check if normal user
 							weechat.nicklist_add_nick(buff_ptr, group_normal_ptr, name, weechat.color(color), " ", color, 1)
 						elif ( flag == 8 ):													# Check if ops (include @ prefix) 
@@ -158,8 +145,8 @@ def users_online():
 	return users_rb_dict			# users_online is a dictionary
 
 def update_nicklist(data, remaining_calls):
-	# main function.... shouldn't this actually be part of the "main" function? oh well. Fix later.
-	users_logged_in = users_online()# Get a dictionary of all users logged into the same redbrick server as the current user
+	# TODO - main function.... shouldn't this actually be part of the "main" function? oh well. Fix later.
+	users_logged_in = users_online()		# Get a dictionary of all users logged into the same redbrick server as the current user
 	set_colors(users_logged_in)	
 	return weechat.WEECHAT_RC_OK
 
