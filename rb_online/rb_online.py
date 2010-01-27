@@ -4,6 +4,14 @@ SCRIPT_VERSION = "2.0"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = """Colour nicks in #lobby depending on whether or not nick is logged into the same server as the user via SSH."""
 
+#
+#	Online users	-->		Light Green
+#	Offline Users	-->		Dark Grey
+#	Incoming Users	-->		Red for 10 seconds after logging in
+#	Outgoing Users	-->		Yellow for 10 seconds after logging out
+#
+
+
 import re
 import os
 import time
