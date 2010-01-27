@@ -16,9 +16,6 @@ nick_ptr = "NULL"
 
 first_run = 1
 
-# online_list = []
-# offline_list = []
-
 online_dict = {}
 offline_dict = {}
 
