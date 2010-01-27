@@ -2,7 +2,7 @@ SCRIPT_NAME = "rb_online"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
 SCRIPT_VERSION = "2.0"
 SCRIPT_LICENSE = "GPL3"
-SCRIPT_DESC = "Colour nicks in #lobby depending on whether the user is logged into redbrick or not"
+SCRIPT_DESC = """Colour nicks in #lobby depending on whether or not nick is logged into the same server as the user via SSH."""
 
 import re
 import os
