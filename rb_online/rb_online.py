@@ -9,10 +9,6 @@ import os
 import time
 import_ok = True
 
-PRINT_CMD = "rbusers"
-cmd_buffer = ""
-
-users_rb_dict = {}
 users_logged_in = {}
 
 buff_ptr = "NULL"
