@@ -178,8 +178,4 @@ def update_nicklist( data, remaining_calls ):
 
 if( __name__ == "__main__" and import_ok ):
 	if( weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "") ):
-		# set default settings
-		for option, default_value in rb_online_settings.iteritems():
-			if( not weechat.config_is_set_plugin(option) ):
-				weechat.config_set_plugin(option, default_value)
 		weechat.hook_timer(1000, 0, 0, "update_nicklist", "")
