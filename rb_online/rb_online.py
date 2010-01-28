@@ -18,6 +18,7 @@ import time
 import_ok = True
 
 users_logged_in = {}
+users_rb_dict = {}
 
 buff_ptr = "NULL"
 nick_ptr = "NULL"
@@ -178,4 +179,5 @@ def update_nicklist( data, remaining_calls ):
 
 if( __name__ == "__main__" and import_ok ):
 	if( weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "") ):
+		# set default settings
 		weechat.hook_timer(1000, 0, 0, "update_nicklist", "")
