@@ -14,7 +14,13 @@ SCRIPT_DESC = """Colour nicks in #lobby depending on whether or not nick is logg
 # bar with command:
 #   /set weechat.bar.status.items [+tab]
 #   then complete string by adding for example (without quotes): ",[rbon]"
-
+#
+#	
+#	As of Weechat 0.3.1 - on a default install of weechat (without plugins such as hlpv installed) the command will be:
+#	/set weechat.bar.status.items [time],[buffer_count],[buffer_plugin],buffer_number+:+buffer_name+(buffer_nicklist_count),[lag],[hotlist],[buffer_filter],completion,scroll,[hlpv],[rbon]
+#	
+#	
+#
 import re
 import os
 import time
