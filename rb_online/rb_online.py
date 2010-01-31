@@ -111,7 +111,7 @@ def set_colors( users_logged_in ):
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				flag = weechat.infolist_integer(nicks, 'flags')
-				timeout = weechat.config_get_plugin("interim_period")
+				timeout = int(weechat.config_get_plugin("interim_period"))
 				if( "@Redbrick.dcu.ie" in host ):
 					rnick = re.sub('@Redbrick.dcu.ie', '', host)						# Strip real nick from host
 					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)         # Find nick pointer
