@@ -1,16 +1,19 @@
 SCRIPT_NAME = "rb_online"
 SCRIPT_AUTHOR = "Bernard McKeever <dregin@gmail.com>"
-SCRIPT_VERSION = "2.0"
+SCRIPT_VERSION = "3.0-DEV"
 SCRIPT_LICENSE = "GPL3"
 SCRIPT_DESC = """Colour nicks in #lobby depending on whether or not nick is logged into the same server as the user via SSH."""
 
 #
-#	Online users	-->		Light Green
-#	Offline Users	-->		Dark Grey
-#	Incoming Users	-->		Red for 10 seconds after logging in
-#	Outgoing Users	-->		Yellow for 10 seconds after logging out
-#
-
+#	online_color	-->		Colour for online user nicks		--> Default:	lightgreen
+#	offline_color	-->		Colour for offline user nicks		--> Default:	darkgray
+#	incoming_color	-->		Colour for incoming user nicks		-->	Default:	red
+#	outgoing_color	-->		Colour for outgoing user nicks		-->	Default:	yellow
+#	interim_period	-->		Timeout for interim statuses (incoming / outgoing)	-->Default: 10
+# After loading this script, you can add item "hlpv" to your status
+# bar with command:
+#   /set weechat.bar.status.items [+tab]
+#   then complete string by adding for example (without quotes): ",[rbon]"
 
 import re
 import os
@@ -31,6 +34,8 @@ offline_dict = {}
 outgoing_list = []
 incoming_list = []
 
+rbon_messages = []
+
 try:
 	import weechat
 except:
@@ -38,11 +43,24 @@ except:
 	print "Get weechat @ http://www.weechat.org"
 	import_ok = False
 
+# Script Options
+rbon_settings = {
+		"online_color"		:	"lightgreen",
+		"offline_color"		:	"darkgray",
+		"incoming_color"	:	"red",
+		"outgoing_color"	:	"yellow",
+		"interim_period"	:	"10",
+		"display_status"	:	"on"
+		}
 def pop_outgoing( data, remaining_calls ):
 	# weechat.prnt('', 'OUTgoing callback called at %s' % time.time())
 	global outgoing_list
 	global offline_dict
 	global online_dict
+	global rbon_messages
+
+	rbon_messages.pop(0)
+	weechat.bar_item_update("rbon")
 
 	if ( outgoing_list ):
 		rnick  = outgoing_list.pop()					# User's colour can now be changed from yellow to dark gray
@@ -55,6 +73,10 @@ def pop_incoming( data, remaining_calls ):
 	global incoming_list
 	global offline_dict
 	global online_dict
+	global rbon_messages
+
+	rbon_messages.pop(0)
+	weechat.bar_item_update("rbon")
 
 	if( incoming_list ):
 		rnick = incoming_list.pop()						# User's colour can now be changed from red to green
@@ -64,6 +86,7 @@ def pop_incoming( data, remaining_calls ):
 	return weechat.WEECHAT_RC_OK
 
 def set_colors( users_logged_in ):
+	global rbon_messages								# Variable to hold contents of rbon bar item
 	global first_run									# Script needs one run to populate online and offline dictionaries
 
 	global online_dict
@@ -88,6 +111,7 @@ def set_colors( users_logged_in ):
 				name = weechat.infolist_string(nicks, 'name')
 				host = weechat.infolist_string(nicks, 'host')
 				flag = weechat.infolist_integer(nicks, 'flags')
+				timeout = weechat.config_get_plugin("interim_period")
 				if( "@Redbrick.dcu.ie" in host ):
 					rnick = re.sub('@Redbrick.dcu.ie', '', host)						# Strip real nick from host
 					nick_ptr = weechat.nicklist_search_nick(buff_ptr, "", name)         # Find nick pointer
@@ -110,37 +134,51 @@ def set_colors( users_logged_in ):
 					if( not rnick in users_logged_in and not first_run and rnick in online_dict and rnick not in outgoing_list ):
 						# weechat.prnt("", "OUTgoing user - %s" % rnick)
 						outgoing_list.insert(0, rnick)
-						weechat.hook_timer(10 * 1000, 0, 1, "pop_outgoing", "")				# TODO - This hook executes pop_outgoing immediately instead of waiting 10 seconds
-						color = "yellow"
+						weechat.hook_timer(timeout * 1000, 0, 1, "pop_outgoing", "")				# TODO - This hook executes pop_outgoing immediately instead of waiting 10 seconds
+						color = weechat.config_get_plugin( "outgoing_color" )
+						# TODO - Add OUTGOING nick to rbon_messages here to be displayed in the rbon bar item
+						rbon_nick_color = weechat.color( color )
+						string = "%s%s" % ( rbon_nick_color,name )
+
+						rbon_messages.append( string )
+						weechat.bar_item_update( "rbon" )
+
 						if( rnick in online_dict ):
-							del online_dict[rnick]
+							del online_dict[ rnick ]
 
 					# If IS logged in NOT first run IN nicklist WAS offline on last loop NOT in incoming list
 
 					elif( rnick in users_logged_in and not first_run and rnick in offline_dict and rnick not in incoming_list ):
 						# weechat.prnt("", "INcoming user - %s" % rnick)
 						incoming_list.insert(0, rnick)
-						weechat.hook_timer(10 * 1000, 0, 1, "pop_incoming", "")				# TODO - This hook executes pop_incoming immediately instead of waiting 10 seconds
-						color = "red"														# Color incoming users red
+						weechat.hook_timer(timeout * 1000, 0, 1, "pop_incoming", "")				# TODO - This hook executes pop_incoming immediately instead of waiting 10 seconds
+						color = weechat.config_get_plugin("incoming_color")												# Color incoming users red
+						# TODO - Add INCOMING nick to rbon_messages here to be displayed in the rbon bar item
+						rb_nick_color = weechat.color( color )	
+						string = "%s%s" % ( rb_nick_color, name )
+						
+						rbon_messages.append( string )
+						weechat.bar_item_update( "rbon" )
+
 						if( rnick in offline_dict ):
 							del offline_dict[rnick]
 
-					elif( rnick in incoming_list ): color = "red"
+					elif( rnick in incoming_list ): color = weechat.config_get_plugin( "incoming_color" )
 
-					elif( rnick in outgoing_list ): color = "yellow"
+					elif( rnick in outgoing_list ): color = weechat.config_get_plugin( "outgoing_color" )
 
 					# Check to see if that user is logged
 					elif( rnick in users_logged_in ):
 						if( rnick in offline_dict ):
 							del offline_dict[rnick]
 						online_dict[rnick] = ""
-						color = "lightgreen"												# Color online users green
+						color = weechat.config_get_plugin( "online_color" )												# Color online user user nicks
 
 					else:
 						offline_dict[rnick] = ""
 						if( rnick in online_dict ):
 							del online_dict[rnick]
-						color = "darkgray"
+						color = weechat.config_get_plugin( "offline_color" )											# Colour offline user nicks
 
 					# Adding nicks with relevant colours back into the nicklist
 
@@ -177,7 +215,25 @@ def update_nicklist( data, remaining_calls ):
 	set_colors(users_logged_in)	
 	return weechat.WEECHAT_RC_OK
 
+def rbon_item_cb( data, buffer, args ):
+	"""Callback for building rbon item."""
+	global rbon_messages
+	# string = ''.join(rbon_messages, ', ')
+	if len( rbon_messages ) > 0:
+		# return rbon_messages[0]
+		# return string
+		return ', '.join(rbon_messages)
+	return ""
+
 if( __name__ == "__main__" and import_ok ):
 	if( weechat.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT_DESC, "", "") ):
 		# set default settings
+		for option, default_value in rbon_settings.iteritems():
+			if not weechat.config_is_set_plugin( option ):
+				weechat.config_set_plugin( option, default_value )
+
+		# Create the bar item to alert the user when others log on / off
+		weechat.bar_item_new( 'rbon', 'rbon_item_cb', '')
+
+		# check for users logging on / off
 		weechat.hook_timer(1000, 0, 0, "update_nicklist", "")
