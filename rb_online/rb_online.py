@@ -10,10 +10,13 @@ SCRIPT_DESC = """Colour nicks in #lobby depending on whether or not nick is logg
 #	incoming_color	-->		Colour for incoming user nicks		-->	Default:	red
 #	outgoing_color	-->		Colour for outgoing user nicks		-->	Default:	yellow
 #	interim_period	-->		Timeout for interim statuses (incoming / outgoing)	-->Default: 10
-# After loading this script, you can add item "rbon" to your status
-# bar with command:
-#   /set weechat.bar.status.items [+tab]
-#   then complete string by adding for example (without quotes): ",[rbon]"
+
+#       *NOTE* You must do /set irc.server.away_check 1 in order for this script to work properly.
+
+#       After loading this script, you can add item "rbon" to your status
+#       bar with command:
+#       /set weechat.bar.status.items [+tab] <<< that's you hitting the tab key, yus.
+#       then complete string by adding (without quotes): ",[rbon]"
 #
 #	
 #	As of Weechat 0.3.1 - on a default install of weechat (without plugins such as hlpv installed) the command will be:
