@@ -109,8 +109,8 @@ def set_colors( users_logged_in ):
 		nicks = weechat.infolist_get( 'irc_nick', '', 'irc.redbrick.dcu.ie,#lobby' )
 		buff_ptr = weechat.buffer_search( "irc","irc.redbrick.dcu.ie.#lobby" )
 
-	group_normal_ptr = weechat.nicklist_search_group( buff_ptr, "", "08|normal" )
-	group_op_ptr = weechat.nicklist_search_group( buff_ptr, "", "04|op" )
+	group_normal_ptr = weechat.nicklist_search_group( buff_ptr, "", "..." )
+	group_op_ptr = weechat.nicklist_search_group( buff_ptr, "", "o" )
 	color_nick_online = weechat.config_get_plugin( "color_nick_online" )
 	if( nicks != None ):
 		if( nicks == {} ):
